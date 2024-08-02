@@ -28,12 +28,6 @@
 (setq inhibit-startup-message t)
 (setq make-backup-files nil)
 (setq delete-auto-save-files t)
-(tool-bar-mode -1)
-;; 対になる括弧をハイライトする
-(show-paren-mode 1)
-(setq show-paren-style 'parenthisis)
-;; カーソルがあたっている行をハイライトする
-(global-hl-line-mode t)
 ;; Alt+上下キーで行を移動できるようにする。
 (defun move-line (direction)
   (let ((col (current-column)))
@@ -61,12 +55,6 @@
 (global-set-key (kbd "C-c S-<down>") 'windmove-swap-states-down)
 (global-set-key (kbd "C-c S-<up>") 'windmove-swap-states-up)
 (global-set-key (kbd "C-c S-<right>") 'windmove-swap-states-right)
-;; 行番号を表示する
-(global-display-line-numbers-mode 1)
-;; 括弧を補完する
-(electric-pair-mode 1)
-;; インデントはホワイトスペース4つ
-(setq-default tab-width 4 indent-tabs-mode nil)
 ;; 一行ずつスクロールされるようにする
 (setq scroll-conservatively most-positive-fixnum)
 ;; UTF-8を優先する
@@ -80,18 +68,33 @@
 ;; 長い行はスクロールしてみるのではなく、折り返す。
 (setq-default truncate-lines nil)
 (add-hook 'org-mode-hook (lambda () (setq truncate-lines nil)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Mode(built-in)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; インデントにタブを使用しない
+(setq-default indent-tabs-mode nil)
+(setq-default tab-width 4)
+;; 対になる括弧をハイライトする
+(show-paren-mode 1)
+(setq show-paren-style 'parenthisis)
+;; カーソルがあたっている行をハイライトする
+(global-hl-line-mode t)
+;; ツールバー非表示
+(tool-bar-mode -1)
+;; 行番号を表示する
+(global-display-line-numbers-mode 1)
+;; 括弧を補完する
+(electric-pair-mode 1)
 ;; whitespace-modeの設定
 (leaf whitespace
   :require t
   :config
-  (set-face-attribute 'whitespace-space
-                      nil :foreground "lightgray" :background "orangered")
-  (set-face-attribute 'whitespace-trailing
-                      nil :foreground "lightgray" :background "orangered")
-  (set-face-attribute 'whitespace-newline
-                      nil :foreground "lightgray" :background "gray20")
-  (set-face-attribute 'whitespace-tab
-                      nil :foreground "lightgray" :background "gray20")
+  (custom-set-faces
+  '(whitespace-space    ((t (:foreground "lightgray" :background "orangered"))))
+  '(whitespace-trailing ((t (:foreground "lightgray" :background "orangered"))))
+  '(whitespace-newline  ((t (:foreground "lightgray" :background "gray20"))))
+  '(whitespace-tab      ((t (:foreground "lightgray" :background "gray20")))))
   (setq whitespace-style
         '(face spaces space-mark trailing tabs tab-mark newline newline-mark))
   (setq whitespace-space-regexp "\\(\x3000+\\)")
@@ -116,7 +119,7 @@
   :config
   (load-theme 'zenburn t)
   ;; Faceを一部上書き
-  (set-face-attribute 'default nil :height 100)
+  (set-face-attribute 'default nil :height 100 :background "#101010")
   (set-face-attribute 'region nil :background "#77d9a8" :foreground "black")
   (set-face-attribute 'font-lock-variable-name-face nil :foreground "white")
   (set-face-attribute 'font-lock-string-face nil :foreground "#f6aa00")
@@ -138,8 +141,10 @@
   (setq company-minimum-prefix-length 1)
   (setq company-selection-wrap-around t)
   (setq company-tooltip-limit 5)
+  (add-hook 'prog-mode-hook 'company-mode)
+  :defer-config
   (set-face-attribute 'company-tooltip-selection nil :box t)
-  (add-hook 'prog-mode-hook 'company-mode))
+  )
 
 (leaf eglot
   :ensure t
@@ -152,6 +157,21 @@
   (add-hook 'python-mode-hook 'eglot-ensure)
   (add-hook 'c-mode-hook 'eglot-ensure)
   (add-hook 'c++-mode-hook 'eglot-ensure))
+
+(leaf dirvish
+  :ensure t
+  :config
+  (dirvish-override-dired-mode)
+  (setq dirvish-attributes '(file-size subtree-state))
+  (define-key dirvish-mode-map (kbd "TAB")       'dirvish-subtree-toggle)
+  (define-key dirvish-mode-map (kbd "<backtab>") 'dirvish-subtree-remove))
+
+(leaf rainbow-delimiters
+  :ensure t
+  :require t
+  :config
+  (add-hook 'emacs-lisp-mode-hook 'rainbow-delimiters-mode)
+  (set-face-attribute 'rainbow-delimiters-base-error-face nil :foreground "pink"))
 
 ;; (leaf platformio-mode
 ;;   :ensure nil
