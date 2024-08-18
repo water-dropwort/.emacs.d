@@ -121,7 +121,6 @@
   ;; Faceを一部上書き
   (set-face-attribute 'default nil :height 100 :background "#101010")
   (set-face-attribute 'region nil :background "#77d9a8" :foreground "black")
-  (set-face-attribute 'font-lock-variable-name-face nil :foreground "white")
   (set-face-attribute 'font-lock-string-face nil :foreground "#f6aa00")
   (set-face-attribute 'font-lock-comment-face nil :foreground "#77d9a8")
   (set-face-attribute 'font-lock-comment-delimiter-face nil :foreground "#77d9a8"))
@@ -172,6 +171,9 @@
   :config
   (add-hook 'emacs-lisp-mode-hook 'rainbow-delimiters-mode)
   (set-face-attribute 'rainbow-delimiters-base-error-face nil :foreground "pink"))
+
+(leaf yaml-mode
+  :ensure t)
 
 ;; (leaf platformio-mode
 ;;   :ensure nil
