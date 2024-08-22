@@ -111,6 +111,11 @@
     (view-mode)))
 (add-hook 'find-file-hook 'my/find-file-setup)
 
+(leaf tab-bar
+  :config
+  (tab-bar-mode t)
+  (set-face-attribute 'tab-bar-tab nil :background "orange" :foreground "black"))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Third party packages
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
