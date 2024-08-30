@@ -116,6 +116,26 @@
   (tab-bar-mode t)
   (set-face-attribute 'tab-bar-tab nil :background "orange" :foreground "black"))
 
+(leaf typescript-ts-mode
+  :ensure nil
+  :config
+  ;; interfaceステートメントでインデントされなかったのでインデントルールを追加
+  (defun my/typescript-indent-rules ()
+    (let* ((typescript-rules (cdr (assoc 'typescript (typescript-ts-mode--indent-rules 'typescript)))))
+      (add-to-list 'typescript-rules
+                   `((parent-is "interface_body") parent-bol typescript-ts-mode-indent-offset))
+      (add-to-list 'typescript-rules
+                   `((and (parent-is "interface_body") (node-is "}")) parent-bol 0))
+      (setq-local treesit-simple-indent-rules nil)
+      (add-to-list 'treesit-simple-indent-rules
+                   `(typescript ,@typescript-rules))))
+  (add-to-list 'auto-mode-alist
+               '("\\.ts\\'" .
+                 (lambda ()
+                   (typescript-ts-mode)
+                   (my/typescript-indent-rules))))
+  )
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Third party packages
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -179,6 +199,13 @@
 
 (leaf yaml-mode
   :ensure t)
+
+(leaf treesit-auto
+  :ensure t
+  :require t
+  :config
+  (setq treesit-auto-install t)
+  (global-treesit-auto-mode))
 
 ;; (leaf platformio-mode
 ;;   :ensure nil
