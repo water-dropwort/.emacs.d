@@ -50,11 +50,17 @@
 (global-set-key (kbd "C-c <down>") 'windmove-down)
 (global-set-key (kbd "C-c <up>") 'windmove-up)
 (global-set-key (kbd "C-c <right>") 'windmove-right)
+(global-set-key (kbd "C-c h") 'windmove-left)
+(global-set-key (kbd "C-c j") 'windmove-down)
+(global-set-key (kbd "C-c k") 'windmove-up)
+(global-set-key (kbd "C-c l") 'windmove-right)
 ;; バッファ入れ替えキーバインド
 (global-set-key (kbd "C-c S-<left>") 'windmove-swap-states-left)
 (global-set-key (kbd "C-c S-<down>") 'windmove-swap-states-down)
 (global-set-key (kbd "C-c S-<up>") 'windmove-swap-states-up)
 (global-set-key (kbd "C-c S-<right>") 'windmove-swap-states-right)
+;; 文字削除系バインド
+(global-set-key (kbd "C-S-d") 'delete-backward-char)
 ;; 一行ずつスクロールされるようにする
 (setq scroll-conservatively most-positive-fixnum)
 ;; UTF-8を優先する
@@ -133,7 +139,8 @@
                '("\\.ts\\'" .
                  (lambda ()
                    (typescript-ts-mode)
-                   (my/typescript-indent-rules))))
+                   (my/typescript-indent-rules)
+                   (eglot-ensure))))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
