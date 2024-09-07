@@ -135,7 +135,7 @@
       (setq-local treesit-simple-indent-rules nil)
       (add-to-list 'treesit-simple-indent-rules
                    `(typescript ,@typescript-rules))))
-  (add-to-list 'auto-mode-alist
+   (add-to-list 'auto-mode-alist
                '("\\.ts\\'" .
                  (lambda ()
                    (typescript-ts-mode)
@@ -168,8 +168,8 @@
 (leaf company
   :ensure t
   :config
-  (setq company-idle-delay 0)
-  (setq company-minimum-prefix-length 1)
+  (setq company-idle-delay 0.3)
+  (setq company-minimum-prefix-length 2)
   (setq company-selection-wrap-around t)
   (setq company-tooltip-limit 5)
   (add-hook 'prog-mode-hook 'company-mode)
@@ -179,6 +179,7 @@
 
 (leaf eglot
   :ensure t
+  :require t
   :init
   ;; compat(Verticoの依存パッケージ)でrequire-wtih-checkが定義され、
   ;; eglotの初期化処理がうまく動作しない。
@@ -187,7 +188,9 @@
   :config
   (add-hook 'python-mode-hook 'eglot-ensure)
   (add-hook 'c-mode-hook 'eglot-ensure)
-  (add-hook 'c++-mode-hook 'eglot-ensure))
+  (add-hook 'c++-mode-hook 'eglot-ensure)
+  (add-hook 'web-mode-hook 'eglot-ensure)
+  (add-to-list 'eglot-server-programs '(web-mode . ("/usr/local/bin/typescript-language-server" "--stdio"))))
 
 (leaf dirvish
   :ensure t
@@ -213,6 +216,11 @@
   :config
   (setq treesit-auto-install t)
   (global-treesit-auto-mode))
+
+(leaf web-mode
+  :ensure t
+  :config
+  (add-to-list 'auto-mode-alist '("\\.tsx\\'" . (lambda () (web-mode)))))
 
 ;; (leaf platformio-mode
 ;;   :ensure nil
