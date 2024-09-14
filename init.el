@@ -126,6 +126,7 @@
   :ensure nil
   :init
   (leaf tide :ensure t)
+  (leaf biomejs-format :ensure t) ;; biomeスタンドアローン形式で実行できるようにしておく必要がある。
   :config
   ;; interfaceステートメントでインデントされなかったのでインデントルールを追加
   (defun my/typescript-indent-rules (language)
@@ -154,7 +155,8 @@
     (my/typescript-indent-rules (if (eq major-mode 'typescript-ts-mode) 'typescript 'tsx))
     (tide-setup)
     (flymake-mode 0)
-    (flycheck-mode 1))
+    (flycheck-mode 1)
+    (biomejs-format-mode 1))
   (add-hook 'my/typescript-ts-mode-hook 'my/setup-typescript-mode)
   (add-hook 'my/tsx-ts-mode-hook 'my/setup-typescript-mode)
   )
