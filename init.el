@@ -124,23 +124,39 @@
 
 (leaf typescript-ts-mode
   :ensure nil
+  :init
+  (leaf tide :ensure t)
   :config
   ;; interfaceステートメントでインデントされなかったのでインデントルールを追加
-  (defun my/typescript-indent-rules ()
-    (let* ((typescript-rules (cdr (assoc 'typescript (typescript-ts-mode--indent-rules 'typescript)))))
+  (defun my/typescript-indent-rules (language)
+    (let* ((typescript-rules (cdr (assoc language (typescript-ts-mode--indent-rules language)))))
       (add-to-list 'typescript-rules
                    `((parent-is "interface_body") parent-bol typescript-ts-mode-indent-offset))
       (add-to-list 'typescript-rules
                    `((and (parent-is "interface_body") (node-is "}")) parent-bol 0))
       (setq-local treesit-simple-indent-rules nil)
       (add-to-list 'treesit-simple-indent-rules
-                   `(typescript ,@typescript-rules))))
-   (add-to-list 'auto-mode-alist
-               '("\\.ts\\'" .
-                 (lambda ()
-                   (typescript-ts-mode)
-                   (my/typescript-indent-rules)
-                   (eglot-ensure))))
+                   `(,language ,@typescript-rules))))
+  ;; *-ts-modeにhookが存在しないので定義する
+  (defvar my/typescript-ts-mode-hook nil)
+  (defvar my/tsx-ts-mode-hook nil)
+  (defun run-my/typescript-ts-mode-hook ()
+    (run-hooks 'my/typescript-ts-mode-hook))
+  (defun run-my/tsx-ts-mode-hook ()
+    (run-hooks 'my/tsx-ts-mode-hook))
+  (advice-add 'typescript-ts-mode :after #'run-my/typescript-ts-mode-hook)
+  (advice-add 'tsx-ts-mode        :after #'run-my/tsx-ts-mode-hook)
+  ;; .ts,.tsx拡張子のファイルを開いたときにモードを設定する
+  (add-to-list 'auto-mode-alist '("\\.ts\\'" . (lambda () (typescript-ts-mode))))
+  (add-to-list 'auto-mode-alist '("\\.tsx\\'" . (lambda () (tsx-ts-mode))))
+  ;;
+  (defun my/setup-typescript-mode ()
+    (my/typescript-indent-rules (if (eq major-mode 'typescript-ts-mode) 'typescript 'tsx))
+    (tide-setup)
+    (flymake-mode 0)
+    (flycheck-mode 1))
+  (add-hook 'my/typescript-ts-mode-hook 'my/setup-typescript-mode)
+  (add-hook 'my/tsx-ts-mode-hook 'my/setup-typescript-mode)
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -168,10 +184,10 @@
 (leaf company
   :ensure t
   :config
-  (setq company-idle-delay 0.3)
-  (setq company-minimum-prefix-length 2)
+  (setq company-idle-delay 0)
+  (setq company-minimum-prefix-length 1)
   (setq company-selection-wrap-around t)
-  (setq company-tooltip-limit 5)
+  (setq company-tooltip-limit 10)
   (add-hook 'prog-mode-hook 'company-mode)
   :defer-config
   (set-face-attribute 'company-tooltip-selection nil :box t)
@@ -189,8 +205,7 @@
   (add-hook 'python-mode-hook 'eglot-ensure)
   (add-hook 'c-mode-hook 'eglot-ensure)
   (add-hook 'c++-mode-hook 'eglot-ensure)
-  (add-hook 'web-mode-hook 'eglot-ensure)
-  (add-to-list 'eglot-server-programs '(web-mode . ("/usr/local/bin/typescript-language-server" "--stdio"))))
+  )
 
 (leaf dirvish
   :ensure t
@@ -216,11 +231,6 @@
   :config
   (setq treesit-auto-install t)
   (global-treesit-auto-mode))
-
-(leaf web-mode
-  :ensure t
-  :config
-  (add-to-list 'auto-mode-alist '("\\.tsx\\'" . (lambda () (web-mode)))))
 
 ;; (leaf platformio-mode
 ;;   :ensure nil
