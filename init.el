@@ -125,7 +125,22 @@
 (leaf typescript-ts-mode
   :ensure nil
   :init
-  (leaf tide :ensure t)
+  (leaf tide
+    :ensure t
+    :config
+    ;; Dockerを開発環境とし、Trampでリモートアクセスしたときにtsserverを使用できるようにするための設定。
+    (defun my/tide-convert-to-localpath (filepath)
+      (if (string-match "^/docker:\\([^:]+\\):" filepath)
+          (replace-regexp-in-string "^/docker:\\([^:]+\\):" "" filepath)
+        filepath))
+
+    (advice-add 'tide-locate-tsserver-executable
+                :filter-return #'my/tide-convert-to-localpath)
+    (advice-add 'tide-buffer-file-name
+                :filter-return #'my/tide-convert-to-localpath)
+    ;; tideのlogファイルを出力するためのオプション
+    ;;(setq tide-tsserver-process-environment '("TSS_LOG=-level verbose -file /app/tss.log"))
+    )
   (leaf biomejs-format :ensure t) ;; biomeスタンドアローン形式で実行できるようにしておく必要がある。
   :config
   ;; interfaceステートメントでインデントされなかったのでインデントルールを追加
