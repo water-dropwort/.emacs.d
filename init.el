@@ -50,11 +50,17 @@
 (global-set-key (kbd "C-c <down>") 'windmove-down)
 (global-set-key (kbd "C-c <up>") 'windmove-up)
 (global-set-key (kbd "C-c <right>") 'windmove-right)
+(global-set-key (kbd "C-c h") 'windmove-left)
+(global-set-key (kbd "C-c j") 'windmove-down)
+(global-set-key (kbd "C-c k") 'windmove-up)
+(global-set-key (kbd "C-c l") 'windmove-right)
 ;; バッファ入れ替えキーバインド
 (global-set-key (kbd "C-c S-<left>") 'windmove-swap-states-left)
 (global-set-key (kbd "C-c S-<down>") 'windmove-swap-states-down)
 (global-set-key (kbd "C-c S-<up>") 'windmove-swap-states-up)
 (global-set-key (kbd "C-c S-<right>") 'windmove-swap-states-right)
+;; 文字削除系バインド
+(global-set-key (kbd "C-S-d") 'delete-backward-char)
 ;; 一行ずつスクロールされるようにする
 (setq scroll-conservatively most-positive-fixnum)
 ;; UTF-8を優先する
@@ -111,6 +117,65 @@
     (view-mode)))
 (add-hook 'find-file-hook 'my/find-file-setup)
 
+(leaf tab-bar
+  :config
+  (tab-bar-mode t)
+  (set-face-attribute 'tab-bar-tab nil :background "orange" :foreground "black"))
+
+(leaf typescript-ts-mode
+  :ensure nil
+  :init
+  (leaf tide
+    :ensure t
+    :config
+    ;; Dockerを開発環境とし、Trampでリモートアクセスしたときにtsserverを使用できるようにするための設定。
+    (defun my/tide-convert-to-localpath (filepath)
+      (if (string-match "^/docker:\\([^:]+\\):" filepath)
+          (replace-regexp-in-string "^/docker:\\([^:]+\\):" "" filepath)
+        filepath))
+
+    (advice-add 'tide-locate-tsserver-executable
+                :filter-return #'my/tide-convert-to-localpath)
+    (advice-add 'tide-buffer-file-name
+                :filter-return #'my/tide-convert-to-localpath)
+    ;; tideのlogファイルを出力するためのオプション
+    ;;(setq tide-tsserver-process-environment '("TSS_LOG=-level verbose -file /app/tss.log"))
+    )
+  (leaf biomejs-format :ensure t) ;; biomeスタンドアローン形式で実行できるようにしておく必要がある。
+  :config
+  ;; interfaceステートメントでインデントされなかったのでインデントルールを追加
+  (defun my/typescript-indent-rules (language)
+    (let* ((typescript-rules (cdr (assoc language (typescript-ts-mode--indent-rules language)))))
+      (add-to-list 'typescript-rules
+                   `((parent-is "interface_body") parent-bol typescript-ts-mode-indent-offset))
+      (add-to-list 'typescript-rules
+                   `((and (parent-is "interface_body") (node-is "}")) parent-bol 0))
+      (setq-local treesit-simple-indent-rules nil)
+      (add-to-list 'treesit-simple-indent-rules
+                   `(,language ,@typescript-rules))))
+  ;; *-ts-modeにhookが存在しないので定義する
+  (defvar my/typescript-ts-mode-hook nil)
+  (defvar my/tsx-ts-mode-hook nil)
+  (defun run-my/typescript-ts-mode-hook ()
+    (run-hooks 'my/typescript-ts-mode-hook))
+  (defun run-my/tsx-ts-mode-hook ()
+    (run-hooks 'my/tsx-ts-mode-hook))
+  (advice-add 'typescript-ts-mode :after #'run-my/typescript-ts-mode-hook)
+  (advice-add 'tsx-ts-mode        :after #'run-my/tsx-ts-mode-hook)
+  ;; .ts,.tsx拡張子のファイルを開いたときにモードを設定する
+  (add-to-list 'auto-mode-alist '("\\.ts\\'" . (lambda () (typescript-ts-mode))))
+  (add-to-list 'auto-mode-alist '("\\.tsx\\'" . (lambda () (tsx-ts-mode))))
+  ;;
+  (defun my/setup-typescript-mode ()
+    (my/typescript-indent-rules (if (eq major-mode 'typescript-ts-mode) 'typescript 'tsx))
+    (tide-setup)
+    (flymake-mode 0)
+    (flycheck-mode 1)
+    (biomejs-format-mode 1))
+  (add-hook 'my/typescript-ts-mode-hook 'my/setup-typescript-mode)
+  (add-hook 'my/tsx-ts-mode-hook 'my/setup-typescript-mode)
+  )
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Third party packages
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -139,7 +204,7 @@
   (setq company-idle-delay 0)
   (setq company-minimum-prefix-length 1)
   (setq company-selection-wrap-around t)
-  (setq company-tooltip-limit 5)
+  (setq company-tooltip-limit 10)
   (add-hook 'prog-mode-hook 'company-mode)
   :defer-config
   (set-face-attribute 'company-tooltip-selection nil :box t)
@@ -147,6 +212,7 @@
 
 (leaf eglot
   :ensure t
+  :require t
   :init
   ;; compat(Verticoの依存パッケージ)でrequire-wtih-checkが定義され、
   ;; eglotの初期化処理がうまく動作しない。
@@ -155,7 +221,8 @@
   :config
   (add-hook 'python-mode-hook 'eglot-ensure)
   (add-hook 'c-mode-hook 'eglot-ensure)
-  (add-hook 'c++-mode-hook 'eglot-ensure))
+  (add-hook 'c++-mode-hook 'eglot-ensure)
+  )
 
 (leaf dirvish
   :ensure t
@@ -174,6 +241,13 @@
 
 (leaf yaml-mode
   :ensure t)
+
+(leaf treesit-auto
+  :ensure t
+  :require t
+  :config
+  (setq treesit-auto-install t)
+  (global-treesit-auto-mode))
 
 ;; (leaf platformio-mode
 ;;   :ensure nil
