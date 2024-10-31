@@ -243,6 +243,7 @@
   :ensure t)
 
 (leaf treesit-auto
+  :when (version<= "29" emacs-version)
   :ensure t
   :require t
   :config
