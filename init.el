@@ -176,6 +176,9 @@
   (add-hook 'my/tsx-ts-mode-hook 'my/setup-typescript-mode)
   )
 
+;; .plファイルを開いたときはProlog-modeを適用する。
+(add-to-list 'auto-mode-alist '("\\.pl\\'" . prolog-mode))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Third party packages
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
