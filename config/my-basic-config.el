@@ -100,4 +100,10 @@
   (define-key dirvish-mode-map (kbd "TAB")       'dirvish-subtree-toggle)
   (define-key dirvish-mode-map (kbd "<backtab>") 'dirvish-subtree-remove))
 
+;; Evilモード追加
+(leaf evil
+  :ensure t
+  :config
+  (evil-mode))
+
 (provide 'my-basic-config)
