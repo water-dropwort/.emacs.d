@@ -33,10 +33,16 @@
   :config
   (set-face-attribute 'rainbow-delimiters-base-error-face nil :foreground "pink"))
 
+;; 変更箇所をハイライトする
+(leaf diff-hl
+  :ensure t)
+
 ;; プログラミング環境セットアップ
 (defun my/setup-programming-env ()
   (company-mode)
-  (rainbow-delimiters-mode-enable))
+  (rainbow-delimiters-mode-enable)
+  (diff-hl-mode)
+  )
 (add-hook 'prog-mode-hook 'my/setup-programming-env)
 
 (provide 'my-basic-programming-config)
