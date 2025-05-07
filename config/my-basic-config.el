@@ -77,14 +77,6 @@
           (newline-mark ?\n [?↵ ?\n] [?$ ?\n])))
   (add-hook 'prog-mode-hook 'whitespace-mode))
 
-;; 存在するファイルを開くときはview-modeで開くようにする。
-(defun my/find-file-setup ()
-  (when (and (buffer-file-name)
-             (file-exists-p (buffer-file-name))
-             (not (buffer-modified-p)))
-    (view-mode)))
-(add-hook 'find-file-hook 'my/find-file-setup)
-
 ;; タブバーの設定
 (leaf tab-bar
   :config
