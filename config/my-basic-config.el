@@ -98,4 +98,13 @@
   :config
   (evil-mode))
 
+;; Vertico
+(leaf vertico
+  :ensure t
+  :init
+  (vertico-mode t)
+  :config
+  (setq vertico-cycle t)
+  (setq vertico-count 5))
+
 (provide 'my-basic-config)
